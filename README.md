@@ -16,9 +16,9 @@ To get started with LilTag, you can include it in your project by linking to the
 ### Example of Including LilTag (Deferred Loading)
 
 ```html
-<script src="path/to/liltag.js" defer></script>
+<script src="//deeravenger.github.io/liltag/dist/liltag.min.js" defer></script>
 <script>
-    window.lilTagInit("path/to/liltag_config.json");
+    window.lilTagInit("path_or_url/to/liltag_config.json");
 </script>
 ```
 
@@ -29,10 +29,10 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
 <script>
     (function() {
         const script = document.createElement("script");
-        script.src = "path/to/liltag.js"; // This is the compiled JS file from TypeScript
+        script.src = "//deeravenger.github.io/liltag/dist/liltag.min.js";
         script.async = true;
         script.onload = function() {
-            window.lilTagInit("path/to/liltag_config.json"); // Update with the correct configuration file path
+            window.lilTagInit("path_or_url/to/liltag_config.json"); // Update with the correct configuration file path
         };
         document.head.appendChild(script);
     })();
@@ -45,7 +45,7 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
 You can initialize LilTag by providing a URL to a JSON configuration file. The configuration file should contain the tags you want to inject into your web page.
 
 ```javascript
-window.lilTagInit("path/to/liltag_config.json");
+window.lilTagInit("path_or_url/to/liltag_config.json");
 ```
 
 #### JSON Configuration Example
