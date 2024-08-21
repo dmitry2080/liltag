@@ -1,15 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lilTagInit = lilTagInit;
+var Trigger;
+(function (Trigger) {
+    Trigger["PageLoad"] = "pageLoad";
+    Trigger["DomReady"] = "domReady";
+    Trigger["TimeDelay"] = "timeDelay";
+    Trigger["ElementVisible"] = "elementVisible";
+    Trigger["CustomEvent"] = "customEvent";
+})(Trigger || (Trigger = {}));
+var Location;
+(function (Location) {
+    Location["Head"] = "head";
+    Location["BodyTop"] = "bodyTop";
+    Location["BodyBottom"] = "bodyBottom";
+})(Location || (Location = {}));
+var LoadingType;
+(function (LoadingType) {
+    LoadingType["Async"] = "async";
+    LoadingType["Defer"] = "defer";
+    LoadingType["Standard"] = "standard";
+})(LoadingType || (LoadingType = {}));
+const DATA_TAG_ID_ATTRIBUTE = "data-tag-id";
 function lilTagInit(configOrUrl) {
-    // Check if the input is an empty string, and skip initialization if true
     if (configOrUrl === "") {
         console.log("LilTag initialization skipped: empty string provided.");
         return;
     }
-    // Check if the input is a string (URL) or an object (config)
     if (typeof configOrUrl === "string") {
-        // Treat as URL, load the configuration file
         fetch(configOrUrl)
             .then(response => response.json())
             .then((config) => {
@@ -18,25 +36,24 @@ function lilTagInit(configOrUrl) {
             .catch(error => console.error("Error loading configuration:", error));
     }
     else {
-        // Treat as a configuration object
         processConfig(configOrUrl);
     }
 }
 function processConfig(config) {
     config.tags.forEach(tag => {
         switch (tag.trigger) {
-            case "pageLoad":
+            case Trigger.PageLoad:
                 executeTag(tag);
                 break;
-            case "domReady":
+            case Trigger.DomReady:
                 document.addEventListener("DOMContentLoaded", () => executeTag(tag));
                 break;
-            case "timeDelay":
+            case Trigger.TimeDelay:
                 if (tag.delay !== undefined) {
                     setTimeout(() => executeTag(tag), tag.delay);
                 }
                 break;
-            case "elementVisible":
+            case Trigger.ElementVisible:
                 if (tag.selector) {
                     const observer = new IntersectionObserver(entries => {
                         entries.forEach(entry => {
@@ -49,7 +66,7 @@ function processConfig(config) {
                     document.querySelectorAll(tag.selector).forEach(element => observer.observe(element));
                 }
                 break;
-            case "customEvent":
+            case Trigger.CustomEvent:
                 if (tag.eventName) {
                     document.addEventListener(tag.eventName, () => executeTag(tag));
                 }
@@ -60,7 +77,7 @@ function processConfig(config) {
     });
 }
 function executeTag(tag) {
-    const loadingType = tag.loadingType || "async"; // Default to "async" if not specified
+    const loadingType = tag.loadingType || LoadingType.Async; // Default to "async" if not specified
     if (tag.script) {
         injectScript(tag.script, tag.location, tag.id, loadingType);
     }
@@ -71,53 +88,41 @@ function executeTag(tag) {
         console.warn(`Tag with ID "${tag.id}" has no script or code to execute.`);
     }
 }
-// Function to inject a script dynamically based on the specified location
-function injectScript(url, location, tagId, loadingType = "async") {
+function injectScript(url, location, tagId, loadingType = LoadingType.Async) {
     const script = document.createElement("script");
     script.src = url;
-    script.setAttribute("data-tag-id", tagId); // Add the data-tag-id attribute
+    script.setAttribute(DATA_TAG_ID_ATTRIBUTE, tagId);
     switch (loadingType) {
-        case "async":
+        case LoadingType.Async:
             script.async = true;
             break;
-        case "defer":
+        case LoadingType.Defer:
             script.defer = true;
             break;
-        case "standard":
+        case LoadingType.Standard:
             // No need to set async or defer for standard loading
             break;
         default:
             console.warn(`Unknown loading type "${loadingType}" - defaulting to "async".`);
             script.async = true;
     }
-    switch (location) {
-        case "head":
-            document.head.appendChild(script);
-            break;
-        case "bodyTop":
-            document.body.insertBefore(script, document.body.firstChild);
-            break;
-        case "bodyBottom":
-            document.body.appendChild(script);
-            break;
-        default:
-            console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
-            document.body.appendChild(script);
-    }
+    appendScript(location, script);
 }
-// Function to execute inline JavaScript code based on the specified location
 function executeCode(code, location, tagId) {
     const script = document.createElement("script");
     script.textContent = code;
-    script.setAttribute("data-tag-id", tagId); // Add the data-tag-id attribute
+    script.setAttribute(DATA_TAG_ID_ATTRIBUTE, tagId);
+    appendScript(location, script);
+}
+function appendScript(location, script) {
     switch (location) {
-        case "head":
+        case Location.Head:
             document.head.appendChild(script);
             break;
-        case "bodyTop":
+        case Location.BodyTop:
             document.body.insertBefore(script, document.body.firstChild);
             break;
-        case "bodyBottom":
+        case Location.BodyBottom:
             document.body.appendChild(script);
             break;
         default:
