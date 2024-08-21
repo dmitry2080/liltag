@@ -62,7 +62,7 @@ window.lilTagInit("path_or_url/to/liltag_config.json");
         {
             "id": "ads",
             "trigger": "timeDelay",
-            "delay": 5000,  // 5 seconds after page load
+            "delay": 5000,
             "script": "https://cdn.example.com/ads.js",
             "location": "bodyBottom",
             "loadingType": "async"
