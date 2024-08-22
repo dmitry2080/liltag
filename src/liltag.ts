@@ -36,8 +36,14 @@ interface Config {
 
 export default class LilTag {
     private static readonly DATA_ATTRIBUTE = "data-tag-id";
+    private static readonly CACHE_KEY = "LilTagConfigCache";
+    private cacheEnabled: boolean = false;
 
     constructor(private config: Config | string) {}
+
+    public enableCache(): void {
+        this.cacheEnabled = true;
+    }
 
     public init(): void {
         if (this.config === "") {
@@ -46,13 +52,60 @@ export default class LilTag {
         }
 
         if (typeof this.config === "string") {
-            fetch(this.config)
-                .then(response => response.json())
-                .then((config: Config) => this.processConfig(config))
-                .catch(error => console.error("Error loading configuration:", error));
+            if (this.cacheEnabled) {
+                const cachedConfig = this.getCachedConfig(this.config);
+                if (cachedConfig) {
+                    console.log("Using cached configuration.");
+                    this.processConfig(cachedConfig);
+                    return;
+                }
+            }
+            this.fetchAndCacheConfig(this.config);
         } else {
             this.processConfig(this.config);
         }
+    }
+
+    private fetchAndCacheConfig(url: string): void {
+        fetch(url)
+            .then(response => response.json())
+            .then((config: Config) => {
+                if (this.cacheEnabled) {
+                    this.cacheConfig(url, config);
+                }
+                this.processConfig(config);
+            })
+            .catch(error => console.error("Error loading configuration:", error));
+    }
+
+    private cacheConfig(url: string, config: Config): void {
+        const cacheData = this.getCacheData();
+        cacheData[url] = {
+            config: config,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(LilTag.CACHE_KEY, JSON.stringify(cacheData));
+    }
+
+    private getCachedConfig(url: string): Config | null {
+        const cacheData = this.getCacheData();
+        const cachedEntry = cacheData[url];
+        if (!cachedEntry) return null;
+
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (Date.now() - cachedEntry.timestamp > oneDay) {
+            delete cacheData[url];
+            localStorage.setItem(LilTag.CACHE_KEY, JSON.stringify(cacheData));
+            return null;
+        }
+
+        return cachedEntry.config;
+    }
+
+    private getCacheData(): { [key: string]: { config: Config, timestamp: number } } {
+        const cacheData = localStorage.getItem(LilTag.CACHE_KEY);
+        return cacheData ? JSON.parse(cacheData) : {};
     }
 
     private processConfig(config: Config): void {
@@ -94,7 +147,7 @@ export default class LilTag {
     }
 
     private executeTag(tag: TagConfig): void {
-        const loadingType = tag.loadingType || LoadingType.Async; // Default to "async" if not specified
+        const loadingType = tag.loadingType || LoadingType.Async;
         if (tag.script) {
             this.injectScript(tag.script, tag.location, tag.id, loadingType);
         } else if (tag.code) {
@@ -117,7 +170,6 @@ export default class LilTag {
                 script.defer = true;
                 break;
             case LoadingType.Standard:
-                // No need to set async or defer for standard loading
                 break;
             default:
                 console.warn(`Unknown loading type "${loadingType}" - defaulting to "async".`);
