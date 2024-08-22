@@ -43,9 +43,15 @@ class LilTag {
     constructor(config) {
         this.config = config;
         this.cacheEnabled = false;
+        this.cacheTTL = LilTag.CACHE_DEFAULT_TTL;
     }
-    enableCache() {
+    /**
+     * Enable caching with a specific TTL (time-to-live) in seconds.
+     * @param ttl - Time in seconds for which the cache is valid.
+     */
+    enableCache(ttl = LilTag.CACHE_DEFAULT_TTL) {
         this.cacheEnabled = true;
+        this.cacheTTL = ttl;
     }
     init() {
         if (this.config === "") {
@@ -91,8 +97,10 @@ class LilTag {
         const cachedEntry = cacheData[url];
         if (!cachedEntry)
             return null;
-        const oneDay = 24 * 60 * 60 * 1000;
-        if (Date.now() - cachedEntry.timestamp > oneDay) {
+        // Calculate TTL in milliseconds
+        const ttlInMilliseconds = this.cacheTTL * 1000;
+        // Check if the cache has expired
+        if (Date.now() - cachedEntry.timestamp > ttlInMilliseconds) {
             delete cacheData[url];
             localStorage.setItem(LilTag.CACHE_KEY, JSON.stringify(cacheData));
             return null;
@@ -206,6 +214,7 @@ class LilTag {
 }
 LilTag.DATA_ATTRIBUTE = "data-tag-id";
 LilTag.CACHE_KEY = "LilTagConfigCache";
+LilTag.CACHE_DEFAULT_TTL = 3600;
 exports["default"] = LilTag;
 
 })();

@@ -44,7 +44,9 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
 
 ## Usage
 
-### 1. Loading Configuration from a URL
+### Loading Configuration
+
+#### 1. Loading Configuration from a URL
 You can initialize LilTag by providing a URL to a JSON configuration file. The configuration file should contain the tags you want to inject into your web page.
 
 ```javascript
@@ -52,7 +54,7 @@ const lilTag = new LilTag("path_or_url/to/liltag_config.json");
 lilTag.init();
 ```
 
-#### JSON Configuration Example
+##### JSON Configuration Example
 ```json
 {
     "tags": [
@@ -91,7 +93,7 @@ lilTag.init();
 }
 ```
 
-### 2. Providing the Configuration Directly
+#### 2. Providing the Configuration Directly
 If you prefer to provide the configuration directly within your code, you can pass it as an object to the lilTagInit function.
 
 ```javascript
@@ -114,6 +116,17 @@ const lilTag = new LilTag({
     }
   ]
 });
+lilTag.init();
+```
+
+### Enabling Caching
+
+You can enable caching to avoid fetching the configuration on every page load. The enableCache() method allows you to specify a TTL (time-to-live) in seconds.
+    
+```javascript 
+// Enable caching with a TTL of 2 hours (7200 seconds)
+const lilTag = new LilTag('https://example.com/liltag-config.json');
+lilTag.enableCache(7200);
 lilTag.init();
 ```
 

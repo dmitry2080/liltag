@@ -37,12 +37,19 @@ interface Config {
 export default class LilTag {
     private static readonly DATA_ATTRIBUTE = "data-tag-id";
     private static readonly CACHE_KEY = "LilTagConfigCache";
+    private static readonly CACHE_DEFAULT_TTL = 3600;
     private cacheEnabled: boolean = false;
+    private cacheTTL: number = LilTag.CACHE_DEFAULT_TTL;
 
     constructor(private config: Config | string) {}
 
-    public enableCache(): void {
+    /**
+     * Enable caching with a specific TTL (time-to-live) in seconds.
+     * @param ttl - Time in seconds for which the cache is valid.
+     */
+    public enableCache(ttl: number = LilTag.CACHE_DEFAULT_TTL): void {
         this.cacheEnabled = true;
+        this.cacheTTL = ttl;
     }
 
     public init(): void {
@@ -92,9 +99,11 @@ export default class LilTag {
         const cachedEntry = cacheData[url];
         if (!cachedEntry) return null;
 
-        const oneDay = 24 * 60 * 60 * 1000;
+        // Calculate TTL in milliseconds
+        const ttlInMilliseconds = this.cacheTTL * 1000;
 
-        if (Date.now() - cachedEntry.timestamp > oneDay) {
+        // Check if the cache has expired
+        if (Date.now() - cachedEntry.timestamp > ttlInMilliseconds) {
             delete cacheData[url];
             localStorage.setItem(LilTag.CACHE_KEY, JSON.stringify(cacheData));
             return null;
