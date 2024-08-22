@@ -50,7 +50,11 @@ class LilTag {
      * @param ttl - Time in seconds for which the cache is valid.
      */
     enableCache(ttl = LilTag.CACHE_DEFAULT_TTL) {
-        if (ttl <= 0) {
+        if (ttl === 0) {
+            this.cacheEnabled = false;
+            return;
+        }
+        if (ttl < 0) {
             console.log(`LilTag cache TTL must be a positive number (${ttl} provided). Disabling cache.`);
             this.cacheEnabled = false;
             return;
