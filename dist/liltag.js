@@ -1,6 +1,24 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.LilTag = exports.LoadingType = exports.ScriptLocation = exports.Trigger = void 0;
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["LilTag"] = factory();
+	else
+		root["LilTag"] = factory();
+})(this, () => {
+return /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it uses a non-standard name for the exports (exports).
+(() => {
+var exports = __webpack_exports__;
+/*!***********************!*\
+  !*** ./src/liltag.ts ***!
+  \***********************/
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 var Trigger;
 (function (Trigger) {
     Trigger["PageLoad"] = "pageLoad";
@@ -8,19 +26,19 @@ var Trigger;
     Trigger["TimeDelay"] = "timeDelay";
     Trigger["ElementVisible"] = "elementVisible";
     Trigger["CustomEvent"] = "customEvent";
-})(Trigger || (exports.Trigger = Trigger = {}));
+})(Trigger || (Trigger = {}));
 var ScriptLocation;
 (function (ScriptLocation) {
     ScriptLocation["Head"] = "head";
     ScriptLocation["BodyTop"] = "bodyTop";
     ScriptLocation["BodyBottom"] = "bodyBottom";
-})(ScriptLocation || (exports.ScriptLocation = ScriptLocation = {}));
+})(ScriptLocation || (ScriptLocation = {}));
 var LoadingType;
 (function (LoadingType) {
     LoadingType["Async"] = "async";
     LoadingType["Defer"] = "defer";
     LoadingType["Standard"] = "standard";
-})(LoadingType || (exports.LoadingType = LoadingType = {}));
+})(LoadingType || (LoadingType = {}));
 class LilTag {
     constructor(config) {
         this.config = config;
@@ -142,5 +160,13 @@ class LilTag {
         }
     }
 }
-exports.LilTag = LilTag;
 LilTag.DATA_ATTRIBUTE = "data-tag-id";
+exports["default"] = LilTag;
+
+})();
+
+__webpack_exports__ = __webpack_exports__["default"];
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});

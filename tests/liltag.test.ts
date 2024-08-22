@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { LilTag, Trigger, ScriptLocation } from '../src/liltag';
+import LilTag from '../src/liltag';
 
 describe('LilTag', () => {
     let dom: JSDOM;
@@ -28,9 +28,9 @@ describe('LilTag', () => {
             tags: [
                 {
                     id: "testTag",
-                    trigger: Trigger.PageLoad,
+                    trigger: "pageLoad",
                     script: scriptUrl,
-                    location: ScriptLocation.Head
+                    location: "head"
                 }
             ]
         };
@@ -50,9 +50,9 @@ describe('LilTag', () => {
             tags: [
                 {
                     id: "testCode",
-                    trigger: Trigger.PageLoad,
+                    trigger: "pageLoad",
                     code: code,
-                    location: ScriptLocation.BodyBottom
+                    location: "bodyBottom"
                 }
             ]
         };
@@ -71,9 +71,9 @@ describe('LilTag', () => {
             tags: [
                 {
                     id: "delayedTag",
-                    trigger: Trigger.TimeDelay,
+                    trigger: "timeDelay",
                     script: scriptUrl,
-                    location: ScriptLocation.BodyBottom,
+                    location: "bodyBottom",
                     delay: 1000 // 1 second delay
                 }
             ]
@@ -128,9 +128,9 @@ describe('LilTag', () => {
             tags: [
                 {
                     id: "customEventTag",
-                    trigger: Trigger.CustomEvent,
+                    trigger: "customEvent",
                     code: code,
-                    location: ScriptLocation.BodyBottom,
+                    location: "bodyBottom",
                     eventName: eventName
                 }
             ]

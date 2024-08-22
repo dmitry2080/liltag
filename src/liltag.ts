@@ -1,4 +1,4 @@
-export enum Trigger {
+enum Trigger {
     PageLoad = "pageLoad",
     DomReady = "domReady",
     TimeDelay = "timeDelay",
@@ -6,19 +6,19 @@ export enum Trigger {
     CustomEvent = "customEvent"
 }
 
-export enum ScriptLocation {
+enum ScriptLocation {
     Head = "head",
     BodyTop = "bodyTop",
     BodyBottom = "bodyBottom"
 }
 
-export enum LoadingType {
+enum LoadingType {
     Async = "async",
     Defer = "defer",
     Standard = "standard"
 }
 
-export interface TagConfig {
+interface TagConfig {
     id: string;
     trigger: Trigger;
     script?: string;  // URL of the script to load
@@ -34,7 +34,7 @@ interface Config {
     tags: TagConfig[];
 }
 
-export class LilTag {
+export default class LilTag {
     private static readonly DATA_ATTRIBUTE = "data-tag-id";
 
     constructor(private config: Config | string) {}
