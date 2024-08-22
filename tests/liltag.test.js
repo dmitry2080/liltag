@@ -1,90 +1,116 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const jsdom_1 = require("jsdom");
-const liltag_1 = require("./liltag");
+import { JSDOM } from "jsdom";
+import { LilTag, Trigger, ScriptLocation } from "./liltag";
+
 describe('LilTag', () => {
-    let dom;
+    let dom: JSDOM;
+
     beforeEach(() => {
         // Create a new JSDOM instance before each test to simulate a browser environment
-        dom = new jsdom_1.JSDOM(`<!DOCTYPE html><html><head></head><body><div id="content"></div></body></html>`, {
+        dom = new JSDOM(`<!DOCTYPE html><html><head></head><body><div id="content"></div></body></html>`, {
             url: "http://localhost",
             runScripts: "dangerously",
             resources: "usable"
         });
         global.document = dom.window.document;
-        global.window = dom.window;
+        global.window = dom.window as any;
     });
+
     afterEach(() => {
         // Clean up the global document and window after each test
-        global.document = undefined;
-        global.window = undefined;
+        global.document = undefined!;
+        global.window = undefined!;
     });
+
     test('should load script on pageLoad trigger', () => {
         const scriptUrl = "https://example.com/script.js";
-        (0, liltag_1.lilTagInit)({
+
+        const config = {
             tags: [
                 {
                     id: "testTag",
-                    trigger: "pageLoad",
+                    trigger: Trigger.PageLoad,
                     script: scriptUrl,
-                    location: "head"
+                    location: ScriptLocation.Head
                 }
             ]
-        });
+        };
+
+        const lilTag = new LilTag(config);
+        lilTag.init();
+
         const scriptElement = global.document.querySelector(`script[src="${scriptUrl}"]`);
         expect(scriptElement).not.toBeNull();
     });
+
     test('should execute code on pageLoad trigger', () => {
         const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
         const code = "console.log('Code executed!');";
-        (0, liltag_1.lilTagInit)({
+
+        const config = {
             tags: [
                 {
                     id: "testCode",
-                    trigger: "pageLoad",
+                    trigger: Trigger.PageLoad,
                     code: code,
-                    location: "bodyBottom"
+                    location: ScriptLocation.BodyBottom
                 }
             ]
-        });
+        };
+
+        const lilTag = new LilTag(config);
+        lilTag.init();
+
         expect(consoleSpy).toHaveBeenCalledWith('Code executed!');
         consoleSpy.mockRestore();
     });
+
     test('should execute script after timeDelay trigger', done => {
         const scriptUrl = "https://example.com/delayedScript.js";
-        (0, liltag_1.lilTagInit)({
+
+        const config = {
             tags: [
                 {
                     id: "delayedTag",
-                    trigger: "timeDelay",
+                    trigger: Trigger.TimeDelay,
                     script: scriptUrl,
-                    location: "bodyBottom",
+                    location: ScriptLocation.BodyBottom,
                     delay: 1000 // 1 second delay
                 }
             ]
-        });
+        };
+
+        const lilTag = new LilTag(config);
+        lilTag.init();
+
         setTimeout(() => {
             const scriptElement = global.document.querySelector(`script[src="${scriptUrl}"]`);
             expect(scriptElement).not.toBeNull();
             done();
         }, 1100); // Allow some buffer time to ensure the delay has passed
     });
+
     test('should load script when element becomes visible', done => {
         const scriptUrl = "https://example.com/visibleScript.js";
         const selector = "#content";
-        (0, liltag_1.lilTagInit)({
+
+        const config = {
             tags: [
                 {
                     id: "visibleTag",
-                    trigger: "elementVisible",
+                    trigger: Trigger.ElementVisible,
                     script: scriptUrl,
-                    location: "bodyBottom",
+                    location: ScriptLocation.BodyBottom,
                     selector: selector
                 }
             ]
-        });
+        };
+
+        const lilTag = new LilTag(config);
+        lilTag.init();
+
         const contentDiv = global.document.querySelector(selector);
-        contentDiv.style.display = "block";
+        contentDiv!.style.display = "block";
+
         // Simulate the element becoming visible
         setTimeout(() => {
             const scriptElement = global.document.querySelector(`script[src="${scriptUrl}"]`);
@@ -92,24 +118,31 @@ describe('LilTag', () => {
             done();
         }, 100);
     });
+
     test('should execute code on customEvent trigger', () => {
         const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
         const code = "console.log('Custom event triggered!');";
         const eventName = "customEvent";
-        (0, liltag_1.lilTagInit)({
+
+        const config = {
             tags: [
                 {
                     id: "customEventTag",
-                    trigger: "customEvent",
+                    trigger: Trigger.CustomEvent,
                     code: code,
-                    location: "bodyBottom",
+                    location: ScriptLocation.BodyBottom,
                     eventName: eventName
                 }
             ]
-        });
+        };
+
+        const lilTag = new LilTag(config);
+        lilTag.init();
+
         // Simulate the custom event
         const event = new global.window.Event(eventName);
         global.document.dispatchEvent(event);
+
         expect(consoleSpy).toHaveBeenCalledWith('Custom event triggered!');
         consoleSpy.mockRestore();
     });

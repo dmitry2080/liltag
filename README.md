@@ -1,24 +1,26 @@
 # LilTag
 
-LilTag is a simple and flexible JavaScript tag management system designed for developers. It allows you to manage and inject JavaScript tags into your web pages with ease, supporting dynamic loading of scripts based on specific triggers without needing to commit them to your repository.
+LilTag is a lightweight JavaScript tag management system designed to dynamically load and execute scripts on your website based on specified triggers and conditions.
 
 ## Features
 
-- **Flexible Triggers**: Supports a variety of triggers, including page load, DOM ready, time delay, element visibility, and custom events.
-- **Dynamic Script Loading**: Load external scripts dynamically without committing them to your repository.
-- **Custom Code Execution**: Execute inline JavaScript code based on triggers.
-- **Placement Control**: Specify where to inject scripts or execute code (head, top of the body, or bottom of the body).
+- **Dynamic Script Loading**: Load scripts asynchronously, with defer, or standard loading.
+- **Multiple Triggers**: Execute scripts based on page load, DOM ready, custom events, element visibility, or after a delay.
+- **Flexible Configuration**: Easily configure how and when scripts are loaded via a JSON file or an inline configuration object.
+- **Script Location Control**: Inject scripts into the `<head>`, at the top of the `<body>`, or at the bottom of the `<body>`.
+
 
 ## Installation
 
-To get started with LilTag, you can include it in your project by linking to the compiled JavaScript file hosted on GitHub Pages or hosting it yourself.
+Include LilTag in your project:
 
 ### Example of Including LilTag (Deferred Loading)
 
 ```html
 <script src="//deeravenger.github.io/liltag/dist/liltag.min.js" defer></script>
 <script>
-    window.lilTagInit("path_or_url/to/liltag_config.json");
+    const lilTag = new LilTag("path_or_url/to/liltag_config.json");
+    lilTag.init();
 </script>
 ```
 
@@ -32,7 +34,8 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
         script.src = "//deeravenger.github.io/liltag/dist/liltag.min.js";
         script.async = true;
         script.onload = function() {
-            window.lilTagInit("path_or_url/to/liltag_config.json"); // Update with the correct configuration file path
+            const lilTag = new LilTag("path_or_url/to/liltag_config.json");
+            lilTag.init();
         };
         document.head.appendChild(script);
     })();
@@ -45,7 +48,8 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
 You can initialize LilTag by providing a URL to a JSON configuration file. The configuration file should contain the tags you want to inject into your web page.
 
 ```javascript
-window.lilTagInit("path_or_url/to/liltag_config.json");
+const lilTag = new LilTag("path_or_url/to/liltag_config.json");
+lilTag.init();
 ```
 
 #### JSON Configuration Example
@@ -91,25 +95,26 @@ window.lilTagInit("path_or_url/to/liltag_config.json");
 If you prefer to provide the configuration directly within your code, you can pass it as an object to the lilTagInit function.
 
 ```javascript
-window.lilTagInit({
-  tags: [
+const lilTag = new LilTag({
+  "tags": [
     {
-      id: "analytics",
-      trigger: "pageLoad",
-      script: "https://example.com/analytics.js",
-      location: "head",
-      loadingType: "defer"
+      "id": "analytics",
+      "trigger": "pageLoad",
+      "script": "https://cdn.example.com/analytics.js",
+      "location": "head",
+      "loadingType": "async"
     },
     {
-      id: "ads",
-      trigger: "timeDelay",
-      script: "https://example.com/ads.js",
-      location: "bodyBottom",
-      delay: 3000,
-      loadingType: "async"
+      "id": "ads",
+      "trigger": "timeDelay",
+      "delay": 5000,
+      "script": "https://cdn.example.com/ads.js",
+      "location": "bodyBottom",
+      "loadingType": "async"
     }
   ]
 });
+lilTag.init();
 ```
 
 ## Configuration Options
