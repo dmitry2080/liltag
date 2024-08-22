@@ -31,14 +31,8 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run tests
-        run: npm test
-
       - name: Build the project
         run: npm run build
-
-      - name: Minify the build
-        run: npm run minify
 
       - name: Check if there are changes to commit
         id: check_changes

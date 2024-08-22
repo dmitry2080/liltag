@@ -27,28 +27,18 @@ var Trigger;
     Trigger["ElementVisible"] = "elementVisible";
     Trigger["CustomEvent"] = "customEvent";
 })(Trigger || (Trigger = {}));
-var ScriptLocation;
-(function (ScriptLocation) {
-    ScriptLocation["Head"] = "head";
-    ScriptLocation["BodyTop"] = "bodyTop";
-    ScriptLocation["BodyBottom"] = "bodyBottom";
-})(ScriptLocation || (ScriptLocation = {}));
-var LoadingType;
-(function (LoadingType) {
-    LoadingType["Async"] = "async";
-    LoadingType["Defer"] = "defer";
-    LoadingType["Standard"] = "standard";
-})(LoadingType || (LoadingType = {}));
+var ContentLocation;
+(function (ContentLocation) {
+    ContentLocation["Head"] = "head";
+    ContentLocation["BodyTop"] = "bodyTop";
+    ContentLocation["BodyBottom"] = "bodyBottom";
+})(ContentLocation || (ContentLocation = {}));
 class LilTag {
     constructor(config) {
         this.config = config;
         this.cacheEnabled = false;
         this.cacheTTL = LilTag.CACHE_DEFAULT_TTL;
     }
-    /**
-     * Enable caching with a specific TTL (time-to-live) in seconds.
-     * @param ttl - Time in seconds for which the cache is valid.
-     */
     enableCache(ttl = LilTag.CACHE_DEFAULT_TTL) {
         if (ttl === 0) {
             this.cacheEnabled = false;
@@ -106,9 +96,7 @@ class LilTag {
         const cachedEntry = cacheData[url];
         if (!cachedEntry)
             return null;
-        // Calculate TTL in milliseconds
         const ttlInMilliseconds = this.cacheTTL * 1000;
-        // Check if the cache has expired
         if (Date.now() - cachedEntry.timestamp > ttlInMilliseconds) {
             delete cacheData[url];
             localStorage.setItem(LilTag.CACHE_KEY, JSON.stringify(cacheData));
@@ -124,10 +112,24 @@ class LilTag {
         config.tags.forEach(tag => {
             switch (tag.trigger) {
                 case Trigger.PageLoad:
-                    this.executeTag(tag);
+                    if (document.readyState === "complete") {
+                        // Page has already loaded, execute immediately
+                        this.executeTag(tag);
+                    }
+                    else {
+                        // Attach event listener for page load
+                        window.addEventListener("load", () => this.executeTag(tag));
+                    }
                     break;
                 case Trigger.DomReady:
-                    document.addEventListener("DOMContentLoaded", () => this.executeTag(tag));
+                    if (document.readyState === "interactive" || document.readyState === "complete") {
+                        // DOM is already ready, execute immediately
+                        this.executeTag(tag);
+                    }
+                    else {
+                        // Attach event listener for DOMContentLoaded
+                        document.addEventListener("DOMContentLoaded", () => this.executeTag(tag));
+                    }
                     break;
                 case Trigger.TimeDelay:
                     if (tag.delay !== undefined) {
@@ -158,66 +160,56 @@ class LilTag {
         });
     }
     executeTag(tag) {
-        const loadingType = tag.loadingType || LoadingType.Async;
-        if (tag.script) {
-            this.injectScript(tag.script, tag.location, tag.id, loadingType);
-        }
-        else if (tag.code) {
-            this.executeCode(tag.code, tag.location, tag.id);
-        }
-        else {
-            console.warn(`Tag with ID "${tag.id}" has no script or code to execute.`);
-        }
+        this.injectContent(tag.content, tag.location, tag.id);
     }
-    injectScript(url, location, tagId, loadingType = LoadingType.Async) {
-        const script = document.createElement("script");
-        script.src = url;
-        script.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
-        switch (loadingType) {
-            case LoadingType.Async:
-                script.async = true;
-                break;
-            case LoadingType.Defer:
-                script.defer = true;
-                break;
-            case LoadingType.Standard:
-                break;
-            default:
-                console.warn(`Unknown loading type "${loadingType}" - defaulting to "async".`);
-                script.async = true;
+    injectContent(content, location, tagId) {
+        if (!content) {
+            console.warn(`Tag with ID "${tagId}" has no content to inject.`);
+            return;
         }
-        switch (location) {
-            case ScriptLocation.Head:
-                document.head.appendChild(script);
-                break;
-            case ScriptLocation.BodyTop:
-                document.body.insertBefore(script, document.body.firstChild);
-                break;
-            case ScriptLocation.BodyBottom:
-                document.body.appendChild(script);
-                break;
-            default:
-                console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
-                document.body.appendChild(script);
-        }
-    }
-    executeCode(code, location, tagId) {
-        const script = document.createElement("script");
-        script.textContent = code;
-        script.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
-        switch (location) {
-            case ScriptLocation.Head:
-                document.head.appendChild(script);
-                break;
-            case ScriptLocation.BodyTop:
-                document.body.insertBefore(script, document.body.firstChild);
-                break;
-            case ScriptLocation.BodyBottom:
-                document.body.appendChild(script);
-                break;
-            default:
-                console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
-                document.body.appendChild(script);
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = content.trim();
+        while (tempDiv.firstChild) {
+            const node = tempDiv.firstChild;
+            if (node instanceof HTMLElement) {
+                node.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
+                switch (location) {
+                    case ContentLocation.Head:
+                        if (node.nodeName === "SCRIPT" || node.nodeName === "NOSCRIPT") {
+                            document.head.appendChild(node);
+                        }
+                        else {
+                            console.warn("Injecting non-script content into <head> is not recommended.");
+                            document.body.appendChild(node);
+                        }
+                        break;
+                    case ContentLocation.BodyTop:
+                        document.body.insertBefore(node, document.body.firstChild);
+                        break;
+                    case ContentLocation.BodyBottom:
+                        document.body.appendChild(node);
+                        break;
+                    default:
+                        console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
+                        document.body.appendChild(node);
+                }
+            }
+            else {
+                // If the node is not an HTMLElement, just append it to the correct location
+                switch (location) {
+                    case ContentLocation.Head:
+                        document.head.appendChild(node);
+                        break;
+                    case ContentLocation.BodyTop:
+                        document.body.insertBefore(node, document.body.firstChild);
+                        break;
+                    case ContentLocation.BodyBottom:
+                        document.body.appendChild(node);
+                        break;
+                    default:
+                        document.body.appendChild(node);
+                }
+            }
         }
     }
 }

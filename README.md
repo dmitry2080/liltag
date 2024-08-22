@@ -4,10 +4,12 @@ LilTag is a lightweight JavaScript tag management system designed to dynamically
 
 ## Features
 
-- **Dynamic Script Loading**: Load scripts asynchronously, with defer, or standard loading.
-- **Multiple Triggers**: Execute scripts based on page load, DOM ready, custom events, element visibility, or after a delay.
-- **Flexible Configuration**: Easily configure how and when scripts are loaded via a JSON file or an inline configuration object.
-- **Script Location Control**: Inject scripts into the `<head>`, at the top of the `<body>`, or at the bottom of the `<body>`.
+- **Dynamic Script Injection**: Load scripts dynamically based on various triggers.
+- **Inline Code Execution**: Execute inline JavaScript code on specified triggers.
+- **Content Injection**: Inject complete HTML content, including scripts and noscript tags.
+- **Customizable Loading**: Control where the content gets injected into the DOM (head, body top, or body bottom).
+- **Event-Based Triggers**: Supports triggers such as page load, DOM ready, custom events, and more.
+- **Caching**: Optional caching with customizable TTL (time-to-live) for the configurations.
 
 
 ## Installation
@@ -61,33 +63,8 @@ lilTag.init();
         {
             "id": "analytics",
             "trigger": "pageLoad",
-            "script": "https://cdn.example.com/analytics.js",
-            "location": "head",
-            "loadingType": "async"
-        },
-        {
-            "id": "ads",
-            "trigger": "timeDelay",
-            "delay": 5000,
-            "script": "https://cdn.example.com/ads.js",
-            "location": "bodyBottom",
-            "loadingType": "async"
-        },
-        {
-            "id": "lazyLoadImages",
-            "trigger": "elementVisible",
-            "selector": ".lazy-load",
-            "script": "https://cdn.example.com/lazyload.js",
-            "location": "bodyBottom",
-            "loadingType": "standard"
-        },
-        {
-            "id": "customLogger",
-            "trigger": "customEvent",
-            "eventName": "userLoggedIn",
-            "code": "console.log('User logged in event detected.');",
-            "location": "bodyBottom",
-            "loadingType": "defer"
+          "content": "<script type=\"text/javascript\">console.log('Analytics script loaded.');</script>",
+          "location": "head"
         }
     ]
 }
@@ -102,17 +79,8 @@ const lilTag = new LilTag({
     {
       "id": "analytics",
       "trigger": "pageLoad",
-      "script": "https://cdn.example.com/analytics.js",
-      "location": "head",
-      "loadingType": "async"
-    },
-    {
-      "id": "ads",
-      "trigger": "timeDelay",
-      "delay": 5000,
-      "script": "https://cdn.example.com/ads.js",
-      "location": "bodyBottom",
-      "loadingType": "async"
+      "content": "<script type=\"text/javascript\">console.log('Analytics script loaded.');</script>",
+      "location": "head"
     }
   ]
 });
@@ -140,8 +108,7 @@ Each tag in the configuration file or object should have the following propertie
   - "timeDelay": Triggered after a specified delay once the page has loaded.
   - "elementVisible": Triggered when a specified element becomes visible in the viewport.
   - "customEvent": Triggered when a custom event is fired.
-- **script**: (Optional) The URL of the script to be injected.
-- **code**: (Optional) Inline JavaScript code to be executed.
+- **content**: The full HTML content to inject, including script and noscript tags.
 - **location**: Where to inject the script or execute the code. Options are:
   - "head": Injects the script or code into the <head> of the document.
   - "bodyTop": Injects the script or code at the top of the <body>.
@@ -149,9 +116,7 @@ Each tag in the configuration file or object should have the following propertie
 - **delay**: (Optional) Used with the "timeDelay" trigger to specify the delay in milliseconds before the script or code is executed.
 - **selector**: (Optional) A CSS selector for the element to observe. Required for the "elementVisible" trigger.
 - **eventName**: (Optional) The name of the custom event to listen for. Required for the "customEvent" trigger.
-- **loadingType**: (Optional) Specifies how the script should be loaded. Options are:
-  - "async": The script is loaded asynchronously and does not block page rendering. This is the default behavior.
-  - "defer": The script is loaded in parallel with other resources but is executed only after the HTML document is fully parsed.
-  - "standard": The script is loaded and executed immediately as it is encountered, blocking the parsing of the rest of the page.
 
-Each tag must specify at least one of the following: script (URL) or code (inline JavaScript). The location determines where the script or code is inserted into the document.
+## Contributing
+
+Contributions are welcome! Please submit a pull request or create an issue to discuss your ideas or report bugs.
