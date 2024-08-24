@@ -1,12 +1,12 @@
 # LilTag
 
-LilTag is a lightweight JavaScript tag management system designed to dynamically load and execute scripts on your website based on specified triggers and conditions.
+**LilTag** is a simple JavaScript tag management system that dynamically loads and runs scripts on your website based
+on the rules you set. With just 250 lines of code, LilTag uses a simple JSON file to store tags, operates without
+cookies, and doesn’t track users, ensuring your website remains fully GDPR compliant.
 
 ## Features
 
 - **Dynamic Script Injection**: Load scripts dynamically based on various triggers.
-- **Inline Code Execution**: Execute inline JavaScript code on specified triggers.
-- **Content Injection**: Inject complete HTML content, including scripts and noscript tags.
 - **Customizable Loading**: Control where the content gets injected into the DOM (head, body top, or body bottom).
 - **Event-Based Triggers**: Supports triggers such as page load, DOM ready, custom events, and more.
 - **Caching**: Optional caching with customizable TTL (time-to-live) for the configurations.
