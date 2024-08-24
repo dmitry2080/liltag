@@ -21,8 +21,8 @@ Include LilTag in your project:
 ```html
 <script src="//deeravenger.github.io/liltag/dist/liltag.min.js" defer></script>
 <script>
-    const lilTag = new LilTag("path_or_url/to/liltag_config.json");
-    lilTag.init();
+  const lilTag = new LilTag("path_or_url/to/liltag_config.json");
+  lilTag.init();
 </script>
 ```
 
@@ -31,16 +31,16 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
 
 ```html
 <script>
-    (function() {
-        const script = document.createElement("script");
-        script.src = "//deeravenger.github.io/liltag/dist/liltag.min.js";
-        script.async = true;
-        script.onload = function() {
-            const lilTag = new LilTag("path_or_url/to/liltag_config.json");
-            lilTag.init();
-        };
-        document.head.appendChild(script);
-    })();
+  (function () {
+    const script = document.createElement("script");
+    script.src = "//deeravenger.github.io/liltag/dist/liltag.min.js";
+    script.async = true;
+    script.onload = function () {
+      const lilTag = new LilTag("path_or_url/to/liltag_config.json");
+      lilTag.init();
+    };
+    document.head.appendChild(script);
+  })();
 </script>
 ```
 
@@ -59,14 +59,14 @@ lilTag.init();
 ##### JSON Configuration Example
 ```json
 {
-    "tags": [
-        {
-            "id": "analytics",
-            "trigger": "pageLoad",
-          "content": "<script type=\"text/javascript\">console.log('Analytics script loaded.');</script>",
-          "location": "head"
-        }
-    ]
+  "tags": [
+    {
+      "id": "analytics",
+      "trigger": "pageLoad",
+      "content": "<script type=\"text/javascript\">console.log('Analytics script loaded.');</script>",
+      "location": "head"
+    }
+  ]
 }
 ```
 
@@ -93,7 +93,7 @@ You can enable caching to avoid fetching the configuration on every page load. T
     
 ```javascript 
 // Enable caching with a TTL of 2 hours (7200 seconds)
-const lilTag = new LilTag('https://example.com/liltag-config.json');
+const lilTag = new LilTag('path_or_url/to/liltag_config.json');
 lilTag.enableCache(7200);
 lilTag.init();
 ```
