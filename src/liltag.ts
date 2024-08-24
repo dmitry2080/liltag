@@ -28,7 +28,7 @@ interface Config {
 
 export default class LilTag {
     private static readonly DATA_ATTRIBUTE = "data-tag-id";
-    private static readonly CACHE_KEY = "LilTagConfigCache";
+    private static readonly CACHE_KEY = "LILTAG_CACHE";
     private static readonly CACHE_DEFAULT_TTL = 3600;
     private cacheEnabled: boolean = false;
     private cacheTTL: number = LilTag.CACHE_DEFAULT_TTL;

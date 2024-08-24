@@ -214,7 +214,7 @@ class LilTag {
     }
 }
 LilTag.DATA_ATTRIBUTE = "data-tag-id";
-LilTag.CACHE_KEY = "LilTagConfigCache";
+LilTag.CACHE_KEY = "LILTAG_CACHE";
 LilTag.CACHE_DEFAULT_TTL = 3600;
 exports["default"] = LilTag;
 
