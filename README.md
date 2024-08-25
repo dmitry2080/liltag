@@ -71,7 +71,8 @@ lilTag.init();
 ```
 
 #### 2. Providing the Configuration Directly
-If you prefer to provide the configuration directly within your code, you can pass it as an object to the lilTagInit function.
+
+If you prefer to provide the configuration directly within your code, you can pass it as an object.
 
 ```javascript
 const lilTag = new LilTag({
