@@ -4,6 +4,8 @@
 on the rules you set. With just 250 lines of code, LilTag uses a simple JSON file to store tags, operates without
 cookies, and doesn’t track users, ensuring your website remains fully GDPR compliant.
 
+![Liltag](images/liltag.jpg)
+
 ## Features
 
 - **Dynamic Script Injection**: Load scripts dynamically based on various triggers.
