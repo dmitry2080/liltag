@@ -180,30 +180,32 @@ export default class LilTag {
         while (tempDiv.firstChild) {
             const node = tempDiv.firstChild;
 
-            if (node instanceof HTMLElement) {
-                node.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
+            // Check if the node is a script element and create it programmatically
+            if (node instanceof HTMLScriptElement) {
+                const script = document.createElement("script");
+                script.src = (node as HTMLScriptElement).src;
+                script.defer = (node as HTMLScriptElement).defer;
+                script.setAttribute("data-domain", node.getAttribute("data-domain") || "");
+                script.setAttribute(LilTag.DATA_ATTRIBUTE, tagId); // Add tag ID attribute
 
+                // Append the script to the specified location
                 switch (location) {
                     case ContentLocation.Head:
-                        if (node.nodeName === "SCRIPT" || node.nodeName === "NOSCRIPT") {
-                            document.head.appendChild(node);
-                        } else {
-                            console.warn("Injecting non-script content into <head> is not recommended.");
-                            document.body.appendChild(node);
-                        }
+                        document.head.appendChild(script);
                         break;
                     case ContentLocation.BodyTop:
-                        document.body.insertBefore(node, document.body.firstChild);
+                        document.body.insertBefore(script, document.body.firstChild);
                         break;
                     case ContentLocation.BodyBottom:
-                        document.body.appendChild(node);
+                        document.body.appendChild(script);
                         break;
                     default:
                         console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
-                        document.body.appendChild(node);
+                        document.body.appendChild(script);
                 }
-            } else {
-                // If the node is not an HTMLElement, just append it to the correct location
+            } else if (node instanceof HTMLElement) {
+                // For other HTML elements, append them as is
+                node.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
                 switch (location) {
                     case ContentLocation.Head:
                         document.head.appendChild(node);
@@ -218,6 +220,8 @@ export default class LilTag {
                         document.body.appendChild(node);
                 }
             }
+
+            tempDiv.removeChild(node);
         }
     }
 }
