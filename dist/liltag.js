@@ -40,12 +40,8 @@ class LilTag {
         this.cacheTTL = LilTag.CACHE_DEFAULT_TTL;
     }
     enableCache(ttl = LilTag.CACHE_DEFAULT_TTL) {
-        if (ttl === 0) {
-            this.cacheEnabled = false;
-            return;
-        }
-        if (ttl < 0) {
-            console.log(`LilTag cache TTL must be a positive number (${ttl} provided). Disabling cache.`);
+        if (ttl <= 0) {
+            console.warn(`LilTag cache TTL must be a positive number (${ttl} provided). Disabling cache.`);
             this.cacheEnabled = false;
             return;
         }
@@ -54,7 +50,7 @@ class LilTag {
     }
     init() {
         if (this.config === "") {
-            console.log("LilTag initialization skipped: empty string provided.");
+            console.warn("LilTag initialization skipped: empty string provided.");
             return;
         }
         if (typeof this.config === "string") {
@@ -74,7 +70,12 @@ class LilTag {
     }
     fetchAndCacheConfig(url) {
         fetch(url)
-            .then(response => response.json())
+            .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok (${response.statusText})`);
+            }
+            return response.json();
+        })
             .then((config) => {
             if (this.cacheEnabled) {
                 this.cacheConfig(url, config);
@@ -106,52 +107,77 @@ class LilTag {
     }
     getCacheData() {
         const cacheData = localStorage.getItem(LilTag.CACHE_KEY);
-        return cacheData ? JSON.parse(cacheData) : {};
+        if (cacheData) {
+            try {
+                return JSON.parse(cacheData);
+            }
+            catch (error) {
+                console.error("Error parsing cache data:", error);
+                localStorage.removeItem(LilTag.CACHE_KEY);
+                return {};
+            }
+        }
+        return {};
     }
     processConfig(config) {
         config.tags.forEach(tag => {
             switch (tag.trigger) {
                 case Trigger.PageLoad:
                     if (document.readyState === "complete") {
-                        // Page has already loaded, execute immediately
                         this.executeTag(tag);
                     }
                     else {
-                        // Attach event listener for page load
                         window.addEventListener("load", () => this.executeTag(tag));
                     }
                     break;
                 case Trigger.DomReady:
                     if (document.readyState === "interactive" || document.readyState === "complete") {
-                        // DOM is already ready, execute immediately
                         this.executeTag(tag);
                     }
                     else {
-                        // Attach event listener for DOMContentLoaded
                         document.addEventListener("DOMContentLoaded", () => this.executeTag(tag));
                     }
                     break;
                 case Trigger.TimeDelay:
                     if (tag.delay !== undefined) {
-                        setTimeout(() => this.executeTag(tag), tag.delay);
+                        const delay = Number(tag.delay);
+                        if (isNaN(delay) || delay < 0) {
+                            console.warn(`Invalid delay value for tag "${tag.id}". Skipping execution.`);
+                        }
+                        else {
+                            setTimeout(() => this.executeTag(tag), delay);
+                        }
+                    }
+                    else {
+                        console.warn(`No delay specified for TimeDelay trigger in tag "${tag.id}". Skipping execution.`);
                     }
                     break;
                 case Trigger.ElementVisible:
                     if (tag.selector) {
-                        const observer = new IntersectionObserver(entries => {
+                        const observer = new IntersectionObserver((entries, observer) => {
                             entries.forEach(entry => {
                                 if (entry.isIntersecting) {
                                     this.executeTag(tag);
-                                    observer.disconnect(); // Stop observing after first trigger
+                                    observer.disconnect();
                                 }
                             });
                         });
                         document.querySelectorAll(tag.selector).forEach(element => observer.observe(element));
                     }
+                    else {
+                        console.warn(`No selector specified for ElementVisible trigger in tag "${tag.id}".`);
+                    }
                     break;
                 case Trigger.CustomEvent:
                     if (tag.eventName) {
-                        document.addEventListener(tag.eventName, () => this.executeTag(tag));
+                        const listener = () => {
+                            this.executeTag(tag);
+                            document.removeEventListener(tag.eventName, listener);
+                        };
+                        document.addEventListener(tag.eventName, listener);
+                    }
+                    else {
+                        console.warn(`No eventName specified for CustomEvent trigger in tag "${tag.id}".`);
                     }
                     break;
                 default:
@@ -160,7 +186,12 @@ class LilTag {
         });
     }
     executeTag(tag) {
-        this.injectContent(tag.content, tag.location, tag.id);
+        try {
+            this.injectContent(tag.content, tag.location, tag.id);
+        }
+        catch (error) {
+            console.error(`Error executing tag "${tag.id}":`, error);
+        }
     }
     injectContent(content, location, tagId) {
         if (!content) {
@@ -169,49 +200,43 @@ class LilTag {
         }
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = content.trim();
-        while (tempDiv.firstChild) {
-            const node = tempDiv.firstChild;
-            // Check if the node is a script element and create it programmatically
-            if (node instanceof HTMLScriptElement) {
-                const script = document.createElement("script");
-                script.src = node.src;
-                script.defer = node.defer;
-                script.setAttribute("data-domain", node.getAttribute("data-domain") || "");
-                script.setAttribute(LilTag.DATA_ATTRIBUTE, tagId); // Add tag ID attribute
-                // Append the script to the specified location
-                switch (location) {
-                    case ContentLocation.Head:
-                        document.head.appendChild(script);
-                        break;
-                    case ContentLocation.BodyTop:
-                        document.body.insertBefore(script, document.body.firstChild);
-                        break;
-                    case ContentLocation.BodyBottom:
-                        document.body.appendChild(script);
-                        break;
-                    default:
-                        console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
-                        document.body.appendChild(script);
+        const fragment = document.createDocumentFragment();
+        tempDiv.childNodes.forEach(node => {
+            const clonedNode = node.cloneNode(true);
+            if (clonedNode.nodeType === Node.ELEMENT_NODE) {
+                const element = clonedNode;
+                element.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
+                if (element.tagName.toLowerCase() === 'script') {
+                    const script = document.createElement('script');
+                    // Copy attributes
+                    Array.from(element.attributes).forEach(attr => {
+                        script.setAttribute(attr.name, attr.value);
+                    });
+                    // Copy inline script content
+                    script.text = element.textContent || '';
+                    fragment.appendChild(script);
+                }
+                else {
+                    fragment.appendChild(element);
                 }
             }
-            else if (node instanceof HTMLElement) {
-                // For other HTML elements, append them as is
-                node.setAttribute(LilTag.DATA_ATTRIBUTE, tagId);
-                switch (location) {
-                    case ContentLocation.Head:
-                        document.head.appendChild(node);
-                        break;
-                    case ContentLocation.BodyTop:
-                        document.body.insertBefore(node, document.body.firstChild);
-                        break;
-                    case ContentLocation.BodyBottom:
-                        document.body.appendChild(node);
-                        break;
-                    default:
-                        document.body.appendChild(node);
-                }
+            else {
+                fragment.appendChild(clonedNode);
             }
-            tempDiv.removeChild(node);
+        });
+        switch (location) {
+            case ContentLocation.Head:
+                document.head.appendChild(fragment);
+                break;
+            case ContentLocation.BodyTop:
+                document.body.insertBefore(fragment, document.body.firstChild);
+                break;
+            case ContentLocation.BodyBottom:
+                document.body.appendChild(fragment);
+                break;
+            default:
+                console.warn(`Unknown location "${location}" - defaulting to body bottom.`);
+                document.body.appendChild(fragment);
         }
     }
 }
