@@ -21,7 +21,7 @@ Include LilTag in your project:
 ### Example of Including LilTag (Deferred Loading)
 
 ```html
-<script src="//deeravenger.github.io/liltag/dist/liltag.min.js" defer></script>
+<script src="//dmitry2080.github.io/liltag/dist/liltag.min.js" defer></script>
 <script>
   const lilTag = new LilTag("path_or_url/to/liltag_config.json");
   lilTag.init();
@@ -35,7 +35,7 @@ If you want to load LilTag asynchronously and initialize it only after the scrip
 <script>
   (function () {
     const script = document.createElement("script");
-    script.src = "//deeravenger.github.io/liltag/dist/liltag.min.js";
+    script.src = "//dmitry2080.github.io/liltag/dist/liltag.min.js";
     script.async = true;
     script.onload = function () {
       const lilTag = new LilTag("path_or_url/to/liltag_config.json");
